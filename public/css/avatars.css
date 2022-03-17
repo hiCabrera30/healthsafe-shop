@@ -1,0 +1,39 @@
+
+.avatar-frame {
+    overflow: hidden;
+    left: 50%;
+    position: relative;
+    transform: translate(-50%, 0%) !important;
+    margin-top: -50px;
+    background-color: #E7E8E9;
+    border: 2px solid #e4e4e4;
+}
+
+.avatar-frame.cardless {
+    margin-top: 0px !important;
+}
+
+.avatar-frame.image {
+    width: 180px;
+    height: 180px;
+}
+
+.avatar-image {
+    position: relative;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    transition: 0.5s ease-in-out filter;
+}
+
+.avatar-image.blur {
+    filter: blur(10px);
+}
+
+.card-profile-image > div {
+    overflow: hidden;
+}
+
+.card-profile-image > .rounded-circle {
+    border-radius: 50%;
+}

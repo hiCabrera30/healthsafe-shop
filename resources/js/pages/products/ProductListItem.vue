@@ -23,15 +23,17 @@
                 ></number-input-spinner>
             </div>
             <div class="mt-5">
-                <button v-if="availableStock > 0" class="btn btn-primary" @click="addToCart">Add to cart</button>
-                <button v-else class="btn btn-primary disabled">All stocks are in cart</button>
+                <button v-if="!hasStock" type="button" class="btn btn-primary disabled">Out of stock</button>
+                <button v-else-if="availableStock > 0" type="button" class="btn btn-primary" @click="addToCart">Add to cart</button>
+                <button v-else type="button" class="btn btn-primary disabled">All stocks are in cart</button>
             </div>
         </td>
     </tr>
 </template>
 
 <script>
-import NumberInputSpinner from 'vue-number-input-spinner'
+import NumberInputSpinner from 'vue-number-input-spinner';
+import { promptSuccess, promptErrors } from 'utils/prompts';
 
 export default {
     name: 'ProductListItem',
@@ -40,6 +42,9 @@ export default {
     computed: {
         availableStock() {
             return this.product.stock - this.amountInCart;
+        },
+        hasStock() {
+            return this.product.stock > 0;
         },
     },
 

@@ -54,7 +54,7 @@ export default {
             const totalAmount = data.amount + (product ? product.amount : 0);
             
             if (totalAmount > data.stock) {
-                promptErrors
+                return promptErrors("Product has invalid number of stocks");
             }
                 
             this.cart.addProduct(data.id, data.amount);

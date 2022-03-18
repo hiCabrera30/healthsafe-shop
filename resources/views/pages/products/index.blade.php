@@ -8,7 +8,9 @@
 @section('content')
 <div class="container mt-5">
     <div class="row">
-        @include('pages.products.includes.records-table')
+        @include('pages.products.includes.records-table', [
+            "showCreateForm" => true
+        ])
     </div>            
 </div>
 

@@ -3,13 +3,26 @@ import { redirect } from 'utils/redirects';
 import { confirm, promptSuccess, promptErrors, promptFormErrors } from 'utils/prompts';
 import Form from 'models/components/Form';
 import Cart from 'models/Cart';
+import NumberInputSpinner from 'vue-number-input-spinner';
 
 export default {
     name: 'ProductForm',
+    components: { NumberInputSpinner },
+    
+    computed: {
+        availableStock() {
+            return this.form.stock - this.amountInCart;
+        },
+        hasStock() {
+            return this.form.stock > 0;
+        },
+    },
 
     data() {
         return {
             cart: new Cart(),
+            amountInCart: 0,
+            amount: 1,
             editable: false,
             imageForm: new Form({
                 image: "",
@@ -25,6 +38,37 @@ export default {
     },
 
     methods: {
+
+        resetAmount() {
+            if (this.$refs.spinner) {
+                this.amount = 0;
+                this.$refs.spinner.increaseNumber();
+            } else {
+                this.amount = 1;
+            }
+        },
+
+        initializeAmountInCart() {
+            const product = this.cart.getProductInCart(this.form.id);
+            this.amountInCart = product ? product.amount : 0;
+        },
+
+        addToCart() {
+            const product = this.cart.getProductInCart(this.product.id);
+            const totalAmount = this.amount + (product ? product.amount : 0);
+            
+
+
+            if (totalAmount > this.product.stock) {
+                this.initializeAmountInCart();
+                return promptErrors("Product has invalid number of stocks");
+            }
+                
+            this.cart.addProduct(this.product.id, this.amount);
+            promptSuccess("Added product to cart");
+            this.initializeAmountInCart();
+            this.resetAmount();
+        },
 
         initializeProduct(product) {
             this.form.id = product.id;
@@ -92,7 +136,7 @@ export default {
 
     mounted() {
         this.initializeProduct(this.product);
-        this.cart.removeProduct(1)
+        this.initializeAmountInCart();
     }
 }
 </script>

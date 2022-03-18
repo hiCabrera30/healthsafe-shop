@@ -19,6 +19,9 @@
             body {
                 font-family: 'Nunito', sans-serif;
             }
+            .inline-block {
+                display: inline-block;
+            }
         </style>
     </head>
     <body class="antialiased">

@@ -7,24 +7,36 @@
 
 @section('content')
     <div class="container mt-5">
-        
         <product-form inline-template :product='@json($product)'>
             <div class="row">
-                <div class="col-lg-9">
+                <div class="order-md-2 col-lg-3">
+                    <avatar-uploader cardless
+                        v-model="imageForm.image"
+                        :size="{width:220, height:220}"
+                        :rounded="false"
+                        class="mt-5"
+                        @change="updateImage"
+                    ></avatar-uploader>
+                    <div v-if="!editable" class="text-center mt-3 mb-5">
+                        <button type="button" class="btn btn-danger btn-block" @click="deleteProduct">
+                            Delete product <i class="fa fa-trash mt-2"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="order-md-1 col-lg-9">
                     <card class="mb-5">
                         <template slot="body">
                             <form @submit.prevent="save">
                                 <template>
-                                    <div v-if="!editable" @click="toggleEdit" class="btn btn-link btn-sm text-blue float-right">
+                                    <button v-if="!editable" @click="toggleEdit" type="button" class="btn btn-link btn-sm text-blue float-right">
                                         <i class="fa fa-edit"></i> Edit
-                                    </div>
-                                    <div v-if="editable && !form.isRequesting" @click="toggleEdit" class="btn btn-link btn-sm text-danger float-right">
+                                    </button>
+                                    <button v-if="editable && !form.isRequesting" @click="toggleEdit" type="button" class="btn btn-link btn-sm text-danger float-right">
                                         <i class="fa fa-ban"></i> Cancel
-                                    </div>
+                                    </button>
                                 </template>
                                 
                                 <div v-if="editable" class="row">
-                                    <h6 class="heading-small text-muted col-12">Product Information</h6>
                                     <div class="col-sm-12">
                                         <form-input
                                             label="Name"
@@ -76,26 +88,37 @@
                                     <labeled-data class="col-lg-12 mb-2" label="Description" :value="form.description" empty-value="No description given"></labeled-data>
                                     <labeled-data class="col-lg-12 mb-2" label="Price" :value="form.displayed_price" empty-value="No price given"></labeled-data>
                                     <labeled-data class="col-lg-12 mb-2" label="Stock" :value="form.stock" empty-value="No stocks available"></labeled-data>
-                                    <div class="col-12 mt-4 text-right">
-                                        <button type="button" class="btn btn-danger" @click="deleteProduct">
-                                            Delete product <i class="fa fa-trash ml-2"></i>
-                                        </button>
-                                    </div>
                                 </div>
                             </form>
+                            <div v-if="!editable" class="mt-4 text-right">
+                                <div class="add-to-cart-wrapper d-md-flex text-center">
+                                    <div class="d-md-inline-block d-inline m-auto mr-md-0" style="width: 200px">
+                                        <number-input-spinner
+                                            v-if="availableStock > 0"
+                                            ref="spinner"
+                                            :min="1"
+                                            :max="availableStock"
+                                            :step="1"
+                                            button-class="vnis__button bg-primary"
+                                            :integer-only="true"
+                                            v-model="amount"
+                                        ></number-input-spinner>
+                                    </div>
+                                    <div class="d-block d-md-inline-block ml-md-2 pt-md-0">
+                                        <button v-if="!hasStock" type="button" class="btn btn-primary mt-md-0 mt-2 disabled">Out of stock</button>
+                                        <button v-else-if="availableStock > 0" type="button" class="btn btn-primary mt-md-0 mt-2" @click="addToCart">Add to cart</button>
+                                        <button v-else type="button" class="btn btn-primary mt-md-0 mt-2 disabled">All stocks are in cart</button>
+                                    </div>
+                                </div>
+                            </div>
                         </template>
                     </card>
                 </div>
-                <div class="col-lg-3">
-                    <avatar-uploader cardless
-                        v-model="imageForm.image"
-                        :size="{width:220, height:220}"
-                        :rounded="false"
-                        class="mt-5"
-                        @change="updateImage"
-                    ></avatar-uploader>
-                </div>
             </div>
-    </product-form>
+        </product-form>
+
+        <div class="row">
+            @include('pages.products.includes.records-table')
+        </div>     
     </div>
 @endsection

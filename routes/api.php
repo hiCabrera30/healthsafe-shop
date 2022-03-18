@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\CartsController;
 use App\Http\Controllers\API\ProductsController;
 use Illuminate\Support\Facades\Route;
 
@@ -19,3 +20,6 @@ Route::name("products.store")->post('/products', [ProductsController::class, 'st
 Route::name("products.destroy")->delete('/products/{product}', [ProductsController::class, 'destroy']);
 Route::name("products.update")->put('/products/{product}', [ProductsController::class, 'update']);
 Route::name("products.update-image")->patch('/products/{product}/update-image', [ProductsController::class, 'updateImage']);
+
+
+Route::name("carts.checkout")->post('/carts/checkout', [CartsController::class, 'checkout']);

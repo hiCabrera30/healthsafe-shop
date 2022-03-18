@@ -22,7 +22,7 @@
                     ></tr>
                     <tr v-if="cartItems.length == 0">
                         <td colspan="6">
-                            <h2 class="text-center text-muted pt-4 pb-6">No items in cart</h2>
+                            <h2 class="pb-5 pt-5 text-center text-muted">No items in cart</h2>
                         </td>
                     </tr>
                 </tbody>
@@ -30,13 +30,13 @@
             <div v-if="cartItems.length > 0" class="text-center p-3">
                 <h4>Grand Total: <span class="font-weight-bold" v-text="displayedGrandTotal"></span></h4>
                 
-                <button class="btn btn-success btn-block" @click="checkout">Checkout</button>
+                <button class="btn btn-success btn-block" @click="checkout">Check out</button>
             </div>
         </template>
     </card>
 </template>
 <script>
-import { get } from 'utils/network';
+import { get, post } from 'utils/network';
 import { redirect } from 'utils/redirects';
 import { confirm, promptSuccess, promptErrors } from 'utils/prompts';
 import Cart from 'models/Cart';
@@ -74,14 +74,21 @@ export default {
             };
 
             get(route("api.products.index"), { params })
-                .then(response => {
-                    this.cartItems = response.data.result.products.map(product => {
-                        product.amount = this.cart.getProductInCart(product.id).amount;
-                        return product;
-                    });
-                })
-                .catch(() => promptErrors("Unable to fetch cart data. Please reload page."));
+                .then(response => this.mapCartItems(response.data.result.products))
+                .catch((error) => promptErrors("Unable to fetch cart data. Please reload page."));
         },
+
+        mapCartItems(products) {
+            this.cartItems = products.map(product => {
+                    const amountInCart = this.cart.getProductInCart(product.id).amount;
+                    product.amount = amountInCart > product.stock ? product.stock : amountInCart;
+
+                    return product;
+                })
+                .filter(product => product.amount > 0);
+            this.cart.setCartData(this.cartItems);
+        },
+
         updateProductAmount(data) {
             this.cart.setProductAmount(data.id, data.amount);
         },
@@ -96,12 +103,22 @@ export default {
         },
 
         async checkout() {
-            const isConfirmed = (await confirm("Are you sure you want to checkout your cart?", "")).value;
+            const isConfirmed = (await confirm("Are you sure you want to check out your cart?", "")).value;
             if (!isConfirmed) return;
 
-            this.cart.clear();
-            await promptSuccess("Successfully checked out your cart")
-            redirect(route("pages.products.index"))
+            const data = {
+                items: this.cartItems
+            }
+
+            post(route("api.carts.checkout"), { data })
+                .then(async response => {
+                    this.cart.clear();
+                    await promptSuccess(response.data.message)
+                    redirect(route("pages.products.index"));
+                })
+                .catch(error => promptErrors(error.response.data.message));
+
+            
         },
     },
     

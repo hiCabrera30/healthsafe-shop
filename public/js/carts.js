@@ -104,19 +104,29 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       (0,utils_network__WEBPACK_IMPORTED_MODULE_1__.get)(route("api.products.index"), {
         params: params
       }).then(function (response) {
-        _this.cartItems = response.data.result.products.map(function (product) {
-          product.amount = _this.cart.getProductInCart(product.id).amount;
-          return product;
-        });
-      })["catch"](function () {
+        return _this.mapCartItems(response.data.result.products);
+      })["catch"](function (error) {
         return (0,utils_prompts__WEBPACK_IMPORTED_MODULE_3__.promptErrors)("Unable to fetch cart data. Please reload page.");
       });
+    },
+    mapCartItems: function mapCartItems(products) {
+      var _this2 = this;
+
+      this.cartItems = products.map(function (product) {
+        var amountInCart = _this2.cart.getProductInCart(product.id).amount;
+
+        product.amount = amountInCart > product.stock ? product.stock : amountInCart;
+        return product;
+      }).filter(function (product) {
+        return product.amount > 0;
+      });
+      this.cart.setCartData(this.cartItems);
     },
     updateProductAmount: function updateProductAmount(data) {
       this.cart.setProductAmount(data.id, data.amount);
     },
     removeProduct: function removeProduct(id) {
-      var _this2 = this;
+      var _this3 = this;
 
       return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee() {
         var isConfirmed, index;
@@ -138,13 +148,13 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 return _context.abrupt("return");
 
               case 5:
-                _this2.cart.removeProduct(id);
+                _this3.cart.removeProduct(id);
 
-                index = _this2.cartItems.findIndex(function (item) {
+                index = _this3.cartItems.findIndex(function (item) {
                   return item.id == id;
                 });
 
-                _this2.cartItems.splice(index, 1);
+                _this3.cartItems.splice(index, 1);
 
               case 8:
               case "end":
@@ -155,42 +165,68 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       }))();
     },
     checkout: function checkout() {
-      var _this3 = this;
+      var _this4 = this;
 
-      return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee2() {
-        var isConfirmed;
-        return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee2$(_context2) {
+      return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee3() {
+        var isConfirmed, data;
+        return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee3$(_context3) {
           while (1) {
-            switch (_context2.prev = _context2.next) {
+            switch (_context3.prev = _context3.next) {
               case 0:
-                _context2.next = 2;
-                return (0,utils_prompts__WEBPACK_IMPORTED_MODULE_3__.confirm)("Are you sure you want to checkout your cart?", "");
+                _context3.next = 2;
+                return (0,utils_prompts__WEBPACK_IMPORTED_MODULE_3__.confirm)("Are you sure you want to check out your cart?", "");
 
               case 2:
-                isConfirmed = _context2.sent.value;
+                isConfirmed = _context3.sent.value;
 
                 if (isConfirmed) {
-                  _context2.next = 5;
+                  _context3.next = 5;
                   break;
                 }
 
-                return _context2.abrupt("return");
+                return _context3.abrupt("return");
 
               case 5:
-                _this3.cart.clear();
+                data = {
+                  items: _this4.cartItems
+                };
+                (0,utils_network__WEBPACK_IMPORTED_MODULE_1__.post)(route("api.carts.checkout"), {
+                  data: data
+                }).then( /*#__PURE__*/function () {
+                  var _ref = _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee2(response) {
+                    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee2$(_context2) {
+                      while (1) {
+                        switch (_context2.prev = _context2.next) {
+                          case 0:
+                            _this4.cart.clear();
 
-                _context2.next = 8;
-                return (0,utils_prompts__WEBPACK_IMPORTED_MODULE_3__.promptSuccess)("Successfully checked out your cart");
+                            _context2.next = 3;
+                            return (0,utils_prompts__WEBPACK_IMPORTED_MODULE_3__.promptSuccess)(response.data.message);
 
-              case 8:
-                (0,utils_redirects__WEBPACK_IMPORTED_MODULE_2__.redirect)(route("pages.products.index"));
+                          case 3:
+                            (0,utils_redirects__WEBPACK_IMPORTED_MODULE_2__.redirect)(route("pages.products.index"));
 
-              case 9:
+                          case 4:
+                          case "end":
+                            return _context2.stop();
+                        }
+                      }
+                    }, _callee2);
+                  }));
+
+                  return function (_x) {
+                    return _ref.apply(this, arguments);
+                  };
+                }())["catch"](function (error) {
+                  return (0,utils_prompts__WEBPACK_IMPORTED_MODULE_3__.promptErrors)(error.response.data.message);
+                });
+
+              case 7:
               case "end":
-                return _context2.stop();
+                return _context3.stop();
             }
           }
-        }, _callee2);
+        }, _callee3);
       }))();
     }
   },
@@ -611,7 +647,7 @@ var render = function () {
                     _c("td", { attrs: { colspan: "6" } }, [
                       _c(
                         "h2",
-                        { staticClass: "text-center text-muted pt-4 pb-6" },
+                        { staticClass: "pb-5 pt-5 text-center text-muted" },
                         [_vm._v("No items in cart")]
                       ),
                     ]),
@@ -638,7 +674,7 @@ var render = function () {
                   staticClass: "btn btn-success btn-block",
                   on: { click: _vm.checkout },
                 },
-                [_vm._v("Checkout")]
+                [_vm._v("Check out")]
               ),
             ])
           : _vm._e(),

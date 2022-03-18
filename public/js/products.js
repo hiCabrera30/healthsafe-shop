@@ -187,6 +187,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var utils_prompts__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! utils/prompts */ "./resources/js/utils/prompts.js");
 /* harmony import */ var models_components_Form__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! models/components/Form */ "./resources/js/models/components/Form.js");
 /* harmony import */ var models_Cart__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! models/Cart */ "./resources/js/models/Cart.js");
+/* harmony import */ var vue_number_input_spinner__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! vue-number-input-spinner */ "./node_modules/vue-number-input-spinner/dist/vue-number-input-spinner.min.js");
+/* harmony import */ var vue_number_input_spinner__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(vue_number_input_spinner__WEBPACK_IMPORTED_MODULE_5__);
 
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
@@ -197,11 +199,25 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
 
 
+
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: 'ProductForm',
+  components: {
+    NumberInputSpinner: (vue_number_input_spinner__WEBPACK_IMPORTED_MODULE_5___default())
+  },
+  computed: {
+    availableStock: function availableStock() {
+      return this.form.stock - this.amountInCart;
+    },
+    hasStock: function hasStock() {
+      return this.form.stock > 0;
+    }
+  },
   data: function data() {
     return {
       cart: new models_Cart__WEBPACK_IMPORTED_MODULE_4__["default"](),
+      amountInCart: 0,
+      amount: 1,
       editable: false,
       imageForm: new models_components_Form__WEBPACK_IMPORTED_MODULE_3__["default"]({
         image: ""
@@ -216,6 +232,32 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     };
   },
   methods: {
+    resetAmount: function resetAmount() {
+      if (this.$refs.spinner) {
+        this.amount = 0;
+        this.$refs.spinner.increaseNumber();
+      } else {
+        this.amount = 1;
+      }
+    },
+    initializeAmountInCart: function initializeAmountInCart() {
+      var product = this.cart.getProductInCart(this.form.id);
+      this.amountInCart = product ? product.amount : 0;
+    },
+    addToCart: function addToCart() {
+      var product = this.cart.getProductInCart(this.product.id);
+      var totalAmount = this.amount + (product ? product.amount : 0);
+
+      if (totalAmount > this.product.stock) {
+        this.initializeAmountInCart();
+        return (0,utils_prompts__WEBPACK_IMPORTED_MODULE_2__.promptErrors)("Product has invalid number of stocks");
+      }
+
+      this.cart.addProduct(this.product.id, this.amount);
+      (0,utils_prompts__WEBPACK_IMPORTED_MODULE_2__.promptSuccess)("Added product to cart");
+      this.initializeAmountInCart();
+      this.resetAmount();
+    },
     initializeProduct: function initializeProduct(product) {
       this.form.id = product.id;
       this.form.name = product.name;
@@ -351,7 +393,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
   },
   mounted: function mounted() {
     this.initializeProduct(this.product);
-    this.cart.removeProduct(1);
+    this.initializeAmountInCart();
   }
 });
 
@@ -478,7 +520,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       var totalAmount = data.amount + (product ? product.amount : 0);
 
       if (totalAmount > data.stock) {
-        utils_prompts__WEBPACK_IMPORTED_MODULE_1__.promptErrors;
+        return (0,utils_prompts__WEBPACK_IMPORTED_MODULE_1__.promptErrors)("Product has invalid number of stocks");
       }
 
       this.cart.addProduct(data.id, data.amount);
@@ -507,6 +549,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var vue_number_input_spinner__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue-number-input-spinner */ "./node_modules/vue-number-input-spinner/dist/vue-number-input-spinner.min.js");
 /* harmony import */ var vue_number_input_spinner__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(vue_number_input_spinner__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var utils_prompts__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! utils/prompts */ "./resources/js/utils/prompts.js");
+//
 //
 //
 //
@@ -540,6 +584,7 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 
+
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: 'ProductListItem',
   components: {
@@ -548,6 +593,9 @@ __webpack_require__.r(__webpack_exports__);
   computed: {
     availableStock: function availableStock() {
       return this.product.stock - this.amountInCart;
+    },
+    hasStock: function hasStock() {
+      return this.product.stock > 0;
     }
   },
   data: function data() {
@@ -1490,15 +1538,33 @@ var render = function () {
       ),
       _vm._v(" "),
       _c("div", { staticClass: "mt-5" }, [
-        _vm.availableStock > 0
+        !_vm.hasStock
           ? _c(
               "button",
-              { staticClass: "btn btn-primary", on: { click: _vm.addToCart } },
+              {
+                staticClass: "btn btn-primary disabled",
+                attrs: { type: "button" },
+              },
+              [_vm._v("Out of stock")]
+            )
+          : _vm.availableStock > 0
+          ? _c(
+              "button",
+              {
+                staticClass: "btn btn-primary",
+                attrs: { type: "button" },
+                on: { click: _vm.addToCart },
+              },
               [_vm._v("Add to cart")]
             )
-          : _c("button", { staticClass: "btn btn-primary disabled" }, [
-              _vm._v("All stocks are in cart"),
-            ]),
+          : _c(
+              "button",
+              {
+                staticClass: "btn btn-primary disabled",
+                attrs: { type: "button" },
+              },
+              [_vm._v("All stocks are in cart")]
+            ),
       ]),
     ]),
   ])

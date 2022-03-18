@@ -1,30 +1,36 @@
 <?php
 
 return [
-    'fetch'            => [
+    'fetch'    => [
         'success' => "Successfully fetched data",
         'failed'  => "Unable to fetch data",
     ],
-    'validate'            => [
+    'validate' => [
         'success' => "Successfully validated data",
         'failed'  => "Unable to validate data",
     ],
-    'products'            => [
-        'create'            => [
+    'products' => [
+        'create'       => [
             'success' => "Successfully created product",
             'failed'  => "Unable to create product",
         ],
-        'update'            => [
+        'update'       => [
             'success' => "Successfully updated product",
             'failed'  => "Unable to update product",
         ],
-        'update-image'            => [
+        'update-image' => [
             'success' => "Successfully updated product image",
             'failed'  => "Unable to update product image",
         ],
-        'delete'            => [
+        'delete'       => [
             'success' => "Successfully deleted product",
             'failed'  => "Unable to delete product",
+        ],
+    ],
+    'carts' => [
+        'checkout' => [
+            'success' => "Successfully checked out cart",
+            'failed'  => "Unable to checke out cart",
         ],
     ],
 ];
